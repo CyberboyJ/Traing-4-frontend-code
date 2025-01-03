@@ -1,0 +1,196 @@
+/************************* 总容器 **************************/
+.container{
+    width: 100%;
+    height: 100%;
+    background-color: #EEE;
+}
+
+/************************* header **************************/
+header{
+    width: 100%;
+    height: 13.9vw;
+    background-color: #EEE;
+    position: fixed;
+    left: 0;
+    top: 0;
+}
+header p{
+    line-height: 13.9vw;
+    text-align: center;
+    font-size: 4.2vw;
+    color: #666;
+}
+
+/************************* section **************************/
+section{
+    width: 100%;
+}
+section .address{
+    width: 100%;
+    background-color: #FFF;
+    border-top: solid 1px #DDD;
+    border-bottom: solid 1px #DDD;
+    margin-bottom: 1.8vw;
+}
+section .address ul{
+    width: 100%;
+    height: 1vw;
+    display: flex;
+    justify-content: space-between;
+}
+section .address ul li{
+    flex: 1;
+    height: 1vw;
+    margin: 0 0.6vw;
+    transform: skew(-30deg);
+}
+section .address ul li:nth-child(odd){
+    background-color: #FF8A81;
+}
+section .address ul li:nth-child(even){
+    background-color: #8FCAF9;
+}
+section .address .content{
+    width: 100%;
+    box-sizing: border-box;
+    padding: 5.6vw;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+section .address .content .content-left{
+    flex: 0 0 80vw;
+}
+section .address .content .content-left h3{
+    font-size: 4.2vw;
+    color: #3C3C3C;
+    margin-bottom: 2vw;
+}
+section .address .content .content-left p{
+    font-size: 3.3vw;
+    color: #757575;
+}
+section .address .content .content-right{
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    user-select: none;
+}
+section .address .content .content-right i{
+    font-size: 6vw;
+    color: #3C3C3C;
+}
+
+section .detailed{
+    width: 100%;
+    border-top: solid 1px #DDD;
+    border-bottom: solid 1px #DDD;
+    margin-bottom: 1.8vw;
+    background-color: #FFF;
+}
+section .detailed ul{
+    width: 100%;
+}
+section .detailed ul li{
+    width: 100%;
+    height: 18vw;
+    box-sizing: border-box;
+    padding: 2vw 5vw;
+    border-top:  solid 1px #EEE;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    font-size: 3.3vw;
+    color: #3C3C3C;
+}
+section .detailed ul li .detailed-left{
+    display: flex;
+    align-items: center;
+}
+section .detailed ul li .detailed-left img{
+    width: 16vw;
+    height: 14vw;
+    margin-right: 2vw;
+}
+section .detailed ul li .detailed-right{
+    text-align: right;
+}
+section .detailed ul li .detailed-right p:last-child{
+    margin-top: 2vw;
+    color: #BBB;
+}
+
+section .payment{
+    width: 100%;
+    border-top: solid 1px #DDD;
+    border-bottom: solid 1px #DDD;
+    background-color: #FFF;
+}
+section .payment ul{
+    width: 100%;
+}
+section .payment li{
+    width: 89vw;
+    height: 12.5vw;
+    margin: 0 auto;
+    border-bottom: solid 1px #EEE;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+section .payment li .payment-left{
+    display: flex;
+    align-items: center;
+}
+section .payment li .payment-left img{
+    width: 8.9vw;
+    height: 8.9vw;
+    margin-right: 3vw;
+}
+section .payment li .payment-left p{
+    font-size: 3.6vw;
+    color: #333;
+}
+section .payment li input{
+    width: 4.5vw;
+    height: 4.5vw;
+}
+
+/************************* footer **************************/
+footer{
+    width: 100%;
+    height: 14.4vw;
+    background-color: #FFF;
+    box-shadow: 0 3px 14px 2px #CCC;
+
+    display: flex;
+    align-items: center;
+
+    position: fixed;
+    left: 0;
+    bottom: 0;
+}
+footer ul{
+    width: 100%;
+    height: 14.4vw;
+    background-color: #FFF;
+    display: flex;
+}
+footer ul li{
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    font-size: 4.2vw;
+    color: #FF6700;
+    user-select: none;
+}
+footer ul li:last-child{
+    background-color: #FF6700;
+    color: #FFF;
+}
