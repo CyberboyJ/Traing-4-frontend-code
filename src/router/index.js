@@ -14,7 +14,7 @@ const routes = [
   }, {
     path: '/index',
     name: 'Index',
-    component: Index
+    component: Index 
   }, {
     path: '/goodsType',
     name: 'GoodsType',

@@ -98,6 +98,7 @@
 <script setup>
 import { useRouter } from "vue-router";
 import { ref, inject, computed } from "vue";
+import { nextTick } from "vue"; //额外添加的，用于address（1.4）
 import { getSessionStorage, getCurDate, getCurTime } from "../common.js";
 const axios = inject("axios");
 const router = useRouter();
@@ -121,11 +122,14 @@ const goodsTotalPrice = computed(() => {
 });
 //初始化
 const init = () => {
+  const defaultValue = customer.default || 1; // 确保 default 参数传递
   axios
     .post("selectAddressByTelIdByDefault", {
       telId: customer.telId,
+      default: defaultValue, // 确保添加 default 参数，表示查询默认地址[指导书上要求的参数包含这个，所以为前端代码额外添加]（1.4）
     })
     .then((response) => {
+      console.log("返回的地址数据：", response.data); // 确保输出返回的数据
       address.value = response.data;
     })
     .catch((error) => {

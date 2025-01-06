@@ -50,8 +50,10 @@ const customer = getSessionStorage("customer");
 //查询购物中是否存在商品
 let selectCartCountByTelId = () => {
   axios
-    .post("selectCartCountByTelId", {
-      telId: customer.telId,
+    .get("selectCartCountByTelId", {
+      params: {
+        telId: customer.telId,
+      },
     })
     .then((response) => {
       cartcount.value = response.data;
@@ -63,8 +65,10 @@ let selectCartCountByTelId = () => {
 //初始化
 const init = () => {
   axios
-    .post("selectGoodsById", {
-      goodsId: route.query.goodsId,
+    .get("selectGoodsById", {
+      params: {
+        goodsId: route.query.goodsId,
+      },
     })
     .then((response) => {
       // 检查后端返回的数据（它是一个数组）
@@ -87,7 +91,7 @@ const init = () => {
 init();
 const updateQuantityCart = () => {
   axios
-    .post("updateQuantityCart", {
+    .put("updateQuantityCart", {
       telId: customer.telId,
       goodsId: route.query.goodsId,
       quantity: 1,

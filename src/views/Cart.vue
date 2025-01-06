@@ -112,6 +112,12 @@ const init = () => {
 };
 init();
 const isSelect = (goodsId, state) => {
+  //用于检查的部分
+  console.log("发送请求的数据:", {
+    telId: customer.telId,
+    goodsId: goodsId,
+    state: state == 1 ? 0 : 1,
+  });
   axios
     .post("updateCartState", {
       telId: customer.telId,

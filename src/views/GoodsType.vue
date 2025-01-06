@@ -71,7 +71,11 @@ const selectGoodsByGoodsTypeId = (goodsTypeId) => {
   //   });
   console.log("Fetching goods for goodsTypeId:", goodsTypeId); // 打印正在查询的商品分类ID
   axios
-    .post("selectGoodsByGoodsTypeId", { goodsTypeId: goodsTypeId })
+    .get("selectGoodsByGoodsTypeId", {
+      params: {
+        goodsTypeId: goodsTypeId,
+      },
+    })
     .then((response) => {
       goodsArr.value = response.data;
       console.log("Fetched goods:", response.data); // 打印后端返回的商品数据
@@ -84,7 +88,7 @@ const selectGoodsByGoodsTypeId = (goodsTypeId) => {
 //初始化
 const init = () => {
   axios
-    .post("selectGoodsTypeAll")
+    .get("selectGoodsTypeAll")
     .then((response) => {
       goodsTypeArr.value = response.data;
       goodsType.value = goodsTypeArr.value[0];

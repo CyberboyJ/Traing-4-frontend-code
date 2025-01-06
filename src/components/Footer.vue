@@ -37,8 +37,10 @@ const cartcount = ref(0);
 const init = () => {
   if (customer != null) {
     axios
-      .post("selectCartCountByTelId", {
-        telId: customer.telId,
+      .get("selectCartCountByTelId", {
+        params: {
+          telId: customer.telId,
+        },
       })
       .then((response) => {
         cartcount.value = response.data;
