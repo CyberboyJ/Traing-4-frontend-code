@@ -212,7 +212,6 @@ const init = () => {
 };
 init();
 // 创建订单
-// 创建订单
 const toPayment = () => {
   // 构建订单详细信息（orderDetails），确保它是一个数组
   const orderDetails = cartArr.value.map((cartItem) => ({

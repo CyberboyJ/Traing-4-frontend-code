@@ -1,9 +1,9 @@
 <template>
   <div class="container">
     <section>
-      <div class="login" @click="toLogin">
-        <p>登陆后享受更多优惠</p>
-        <p>去登陆 <i class="fa fa-angle-right"></i></p>
+      <div v-if="!customer" class="login" @click="toLogin">
+        <p>登录后享受更多优惠</p>
+        <p>去登录 <i class="fa fa-angle-right"></i></p>
       </div>
       <img :src="goods.goodsImg" />
       <div class="price">
@@ -41,11 +41,16 @@
 import { useRouter, useRoute } from "vue-router";
 import { ref, inject } from "vue";
 import { getSessionStorage } from "../common.js";
+import { onMounted } from "vue";
+
 const axios = inject("axios");
 const router = useRouter();
 const route = useRoute();
 const goods = ref({});
 const cartcount = ref(0);
+const loginElement = ref(null);
+const firstP = ref(null);
+const secondP = ref(null);
 const customer = getSessionStorage("customer");
 //查询购物中是否存在商品
 let selectCartCountByTelId = () => {
@@ -110,6 +115,38 @@ const init = () => {
 };
 
 init();
+onMounted(() => {
+  // 判断用户是否登录
+  const customer = getSessionStorage("customer");
+  if (customer) {
+    console.log("用户已登录");
+    // 如果用户已登录，禁用登录区域的点击事件并更新文字内容
+    const loginElement = document.querySelector(".login");
+    const pElements = document.querySelectorAll(".login p");
+
+    if (loginElement && pElements.length > 0) {
+      pElements[0].innerText = " ";
+      pElements[1].innerText = " ";
+      loginElement.removeAttribute("onclick"); // 禁用点击事件
+    }
+  } else {
+    console.log("用户未登录");
+    // 如果用户未登录，保持正常状态
+    const loginElement = document.querySelector(".login");
+    const pElements = document.querySelectorAll(".login p");
+
+    if (loginElement == null) console.log("loginElement null");
+    if (pElements.length == 0) console.log("pElements null");
+
+    if (loginElement && pElements.length > 0) {
+      pElements[0].innerText = "登录后享受更多优惠"; // 设置第一行文字
+      pElements[1].innerText = "去登录"; // 设置第二行文字
+      pElements[1].innerHTML += ' <i class="fa fa-angle-right"></i>'; // 添加右箭头
+      loginElement.setAttribute("onclick", "toLogin()"); // 恢复点击事件
+    }
+  }
+});
+
 const updateQuantityCart = () => {
   axios
     .put("updateQuantityCart", {

@@ -17,7 +17,7 @@
         <p>联系电话：{{ orders.contactTel }}</p>
         <p>订购商品：</p>
         <p v-for="(od, index) in orderdetailsArr" :key="od.odId">
-          {{ index + 1 }}、{{ od.goodsName }} x {{ od.quantity }}
+          {{ index + 1 }}. {{ od.goodsName }} x {{ od.quantity }}
         </p>
       </div>
       <div style="width: 100%; height: 14.4vw"></div>
@@ -53,17 +53,39 @@ const init = () => {
       console.log("查询订单时发生错误：", error); // 错误处理
     });
 
-  // 如果需要，可以继续请求订单详情
+  // 请求订单详情
   axios
-    .get(`/order-details`, {
+    .get("order-details", {
       params: { orderId: orderId }, // 假设 order-details 接口需要这个参数
     })
     .then((response) => {
-      orderdetailsArr.value = response.data;
+      // 处理响应数据
+      if (response.data.code === 0) {
+        // 如果返回的 code 为 0，表示查询成功
+        console.log(response.data);
+        orderdetailsArr.value = response.data.data; // 这里是返回的订单详情数据
+        console.log("查询到的订单详情：", orderdetailsArr.value);
+      } else {
+        // 如果返回的 code 不是 0，表示查询失败
+        console.error("查询订单详情失败：", response.data.message);
+      }
     })
     .catch((error) => {
+      // 错误处理
       console.error("查询订单详情时发生错误：", error);
     });
+
+  // // 如果需要，可以继续请求订单详情
+  // axios
+  //   .get(`/order-details`, {
+  //     params: { orderId: orderId }, // 假设 order-details 接口需要这个参数
+  //   })
+  //   .then((response) => {
+  //     orderdetailsArr.value = response.data;
+  //   })
+  //   .catch((error) => {
+  //     console.error("查询订单详情时发生错误：", error);
+  //   });
 };
 
 init();
