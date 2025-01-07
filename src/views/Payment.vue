@@ -33,29 +33,39 @@ const axios = inject("axios");
 const route = useRoute();
 const orders = ref({});
 const orderdetailsArr = ref([]);
-//初始化
+//查找订单
 const init = () => {
+  const orderId = route.query.orderId; // 从路由中获取 orderId
+  console.log("要查找的订单路由：", orderId); // 确保获取到的 orderId 正确
+  if (!orderId) {
+    console.log("订单号不能为空");
+    return;
+  }
+
+  // 请求订单信息，传递 orderId 到路径
   axios
-    .post("selectOrdersById", {
-      orderId: route.query.orderId,
-    })
+    .get(`/orders/${orderId}`) // 将 orderId 作为路径参数传递给后端
     .then((response) => {
+      console.log("后端返回的订单信息：", response.data);
       orders.value = response.data;
     })
     .catch((error) => {
-      console.log(error);
+      console.log("查询订单时发生错误：", error); // 错误处理
     });
+
+  // 如果需要，可以继续请求订单详情
   axios
-    .post("selectOrderdetailsByOrderId", {
-      orderId: route.query.orderId,
+    .get(`/order-details`, {
+      params: { orderId: orderId }, // 假设 order-details 接口需要这个参数
     })
     .then((response) => {
       orderdetailsArr.value = response.data;
     })
     .catch((error) => {
-      console.log(error);
+      console.error("查询订单详情时发生错误：", error);
     });
 };
+
 init();
 </script>
 <style scoped>

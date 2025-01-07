@@ -67,21 +67,39 @@
               <img src="../assets/payment01.png" />
               <p>支付宝</p>
             </div>
-            <input type="radio" checked />
+            <input
+              type="radio"
+              id="alipay"
+              v-model="selectedPaymentMethod"
+              value="alipay"
+              name="payment"
+            />
           </li>
           <li>
             <div class="payment-left">
               <img src="../assets/payment02.png" />
               <p>小米钱包</p>
             </div>
-            <input type="radio" />
+            <input
+              type="radio"
+              id="xiaomi"
+              v-model="selectedPaymentMethod"
+              value="xiaomi"
+              name="payment"
+            />
           </li>
           <li>
             <div class="payment-left">
               <img src="../assets/payment03.png" />
               <p>微信支付</p>
             </div>
-            <input type="radio" />
+            <input
+              type="radio"
+              id="wechat"
+              v-model="selectedPaymentMethod"
+              value="wechat"
+              name="payment"
+            />
           </li>
         </ul>
       </div>
@@ -105,6 +123,8 @@ const router = useRouter();
 const address = ref({});
 const cartArr = ref([]);
 const customer = getSessionStorage("customer");
+//支付方式默认选择支付宝
+const selectedPaymentMethod = ref("alipay"); // 默认选择支付宝
 //使用计算属性获取商品总数量和总金额
 const goodsTotalQuantity = computed(() => {
   let totalQuantity = 0;
@@ -120,57 +140,123 @@ const goodsTotalPrice = computed(() => {
   }
   return totalPrice;
 });
+
+// 获取商品详情并合并到购物车数据中（Cart.vue里面也有这个）
+const fetchProductDetails = (cartItem) => {
+  return new Promise((resolve, reject) => {
+    axios
+      .get("selectGoodsById", { params: { goodsId: cartItem.goodsId } })
+      .then((response) => {
+        if (response.data && response.data.length > 0) {
+          const goods = response.data[0]; // 获取返回的商品数据
+          // 将商品的详细信息（名称、价格、图片等）合并到购物车项
+          cartItem.goodsName = goods.goodsName;
+          cartItem.goodsImg = goods.goodsImg;
+          cartItem.goodsPrice = goods.goodsPrice;
+          resolve(cartItem); // 返回已更新的 cartItem
+        } else {
+          console.error(`商品ID为${cartItem.goodsId}的商品信息未找到`);
+          reject(`商品ID为${cartItem.goodsId}的商品信息未找到`);
+        }
+      })
+      .catch((error) => {
+        console.error("获取商品详情失败：", error);
+        reject(error); // 失败时返回错误
+      });
+  });
+};
+
 //初始化
 const init = () => {
   const defaultValue = customer.default || 1; // 确保 default 参数传递
   axios
-    .post("selectAddressByTelIdByDefault", {
-      telId: customer.telId,
-      default: defaultValue, // 确保添加 default 参数，表示查询默认地址[指导书上要求的参数包含这个，所以为前端代码额外添加]（1.4）
+    .get("address", {
+      params: {
+        telId: customer.telId,
+        default: String(defaultValue), // 确保添加 default 参数，表示查询默认地址[指导书上要求的参数包含这个，所以为前端代码额外添加]（1.4）
+      },
     })
     .then((response) => {
       console.log("返回的地址数据：", response.data); // 确保输出返回的数据
-      address.value = response.data;
+      address.value = response.data[0];
+      console.log("返回的地址数据2：", address.value);
     })
     .catch((error) => {
       console.log(error);
     });
+  //再次获取购物车信息
   axios
-    .post("selectCartByTelId", {
-      telId: customer.telId,
-    })
+    .get(`selectCartByTelId/${customer.telId}`) // 使用路径参数
     .then((response) => {
-      let arr = response.data;
-      for (let cart of arr) {
-        if (cart.state == 1) {
-          cartArr.value.push(cart);
-        }
-      }
+      // cartArr.value = response.data; // 保存购物车数据
+      cartArr.value = response.data.filter((item) => item.state === 1); // 筛选已勾选的商品
+      console.log("购物车数据：", cartArr.value);
+
+      // 对每个购物车商品获取详细信息
+      const productDetailsPromises = cartArr.value.map((cartItem) =>
+        fetchProductDetails(cartItem)
+      );
+
+      // 等待所有商品的详细信息都加载完成
+      Promise.all(productDetailsPromises)
+        .then(() => {
+          console.log("所有商品的详细信息已加载：", cartArr.value);
+        })
+        .catch((error) => {
+          console.error("加载商品信息时出错：", error);
+        });
     })
     .catch((error) => {
-      console.log(error);
+      console.log("获取购物车数据失败：", error);
     });
 };
 init();
+// 创建订单
+// 创建订单
 const toPayment = () => {
+  // 构建订单详细信息（orderDetails），确保它是一个数组
+  const orderDetails = cartArr.value.map((cartItem) => ({
+    goodsId: String(cartItem.goodsId), // 确保goodsId为字符串
+    quantity: String(cartItem.quantity), // 确保quantity为字符串
+  }));
+
+  // 确保 orderDetails 是一个非空数组
+  if (orderDetails.length === 0) {
+    alert("订单详情不能为空！");
+    return;
+  }
+
+  // 确保 addressId 和 orderTotal 是字符串
+  const addressId = String(address.value.addressId);
+  const orderTotal = String(goodsTotalPrice.value);
+
+  // 创建订单请求体
+  const orderData = {
+    telId: customer.telId, // 用户电话
+    addressId: addressId, // 地址ID（确保为字符串）
+    orderTotal: orderTotal, // 总金额（确保为字符串）
+    orderDetails: orderDetails, // 商品详情（数组，传递给后端）
+  };
+
+  // 发送POST请求到后端创建订单
   axios
-    .post("insertOrders", {
-      telId: customer.telId,
-      orderDate: getCurDate() + " " + getCurTime(),
-      orderTotal: goodsTotalPrice.value, //计算属性也是ref响应数据
-      addressId: address.value.addressId,
-      orderState: 0,
-    })
+    .post("createOrder", orderData)
     .then((response) => {
-      let orderId = response.data;
-      if (orderId != "") {
-        router.push({ path: "/payment", query: { orderId: orderId } });
+      console.log("订单创建结果", response.data);
+
+      if (response.data.success) {
+        // 跳转到支付页面
+        router.push({
+          path: "/payment",
+          query: { orderId: response.data.orderId },
+        });
       } else {
         alert("生成订单失败！");
       }
     })
     .catch((error) => {
-      console.log(error);
+      console.log("请求失败：", error); // 错误处理
+      alert("订单创建失败，请稍后重试！");
     });
 };
 </script>

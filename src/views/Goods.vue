@@ -62,12 +62,33 @@ let selectCartCountByTelId = () => {
       console.log(error);
     });
 };
+
+// 获取商品详情并合并到购物车数据中
+const fetchProductDetails = (cartItem) => {
+  return axios
+    .get("selectGoodsById", { params: { goodsId: cartItem.goodsId } }) // 调用 getByGoodId 接口
+    .then((response) => {
+      if (response.data && response.data.length > 0) {
+        const goods = response.data[0]; // 获取返回的商品数据
+        // 将商品的详细信息（名称、价格、图片等）合并到购物车项
+        cartItem.goodsName = goods.goodsName;
+        cartItem.goodsImg = goods.goodsImg;
+        cartItem.goodsPrice = goods.goodsPrice;
+      } else {
+        console.error(`商品ID为${cartItem.goodsId}的商品信息未找到`);
+      }
+    })
+    .catch((error) => {
+      console.error("获取商品详情失败：", error);
+    });
+};
+
 //初始化
 const init = () => {
   axios
     .get("selectGoodsById", {
       params: {
-        goodsId: route.query.goodsId,
+        goodsId: String(route.query.goodsId),
       },
     })
     .then((response) => {
@@ -136,17 +157,21 @@ const addCart = () => {
   } else {
     console.log("顾客电话：" + customer.telId);
     axios
-      .post("searchCartByTelIdByGoodsId", {
+      .post("insertCart", {
         telId: customer.telId,
         goodsId: route.query.goodsId,
+        quantity: 1,
       })
       .then((response) => {
         // 进行查询，如果购物车中已有该物品，修改商品数量
         //如果没有，则进行插入
-        if (response.data >= 1) {
-          updateQuantityCart(); //修改商品数量
+        if (response.data) {
+          // updateQuantityCart(); //修改商品数量
+          alert("加入购物车成功！");
         } else {
-          insertCart(); //插入新的商品
+          // insertCart(); //插入新的商品
+          // console.log("准备开始插入新的商品");
+          alert("加入购物车失败！");
         }
       })
       .catch((error) => {

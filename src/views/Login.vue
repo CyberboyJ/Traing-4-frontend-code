@@ -52,9 +52,8 @@ const login = () => {
   console.log("手机号：" + coutomer.value.telId);
   console.log("密码：" + coutomer.value.password);
   axios
-    .post("selectCustByTelAndPwd", {
-      tel: coutomer.value.telId,
-      pwd: coutomer.value.password,
+    .get("selectCustByTelAndPwd", {
+      params: { tel: coutomer.value.telId, pwd: coutomer.value.password },
     })
     .then((response) => {
       console.log("查找到的用户数据：");

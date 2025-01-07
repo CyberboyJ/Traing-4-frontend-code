@@ -58,22 +58,13 @@ const goodsType = ref({});
 
 //根据商品分类查询所属商品
 const selectGoodsByGoodsTypeId = (goodsTypeId) => {
-  // axios
-  //   .post("selectGoodsByGoodsTypeId", {
-  //     goodsTypeId: goodsTypeId,
-  //   })
-  //   .then((response) => {
-  //     goodsArr.value = response.data;
-  //     console.log("goodsArr:", goodsArr.value); // 打印返回的商品数组
-  //   })
-  //   .catch((error) => {
-  //     console.log(error);
-  //   });
   console.log("Fetching goods for goodsTypeId:", goodsTypeId); // 打印正在查询的商品分类ID
+
+  // 使用 GET 请求并通过 query 参数传递 goodsTypeId
   axios
-    .get("selectGoodsByGoodsTypeId", {
+    .get("/selectGoodsByGoodsTypeId", {
       params: {
-        goodsTypeId: goodsTypeId,
+        goodsTypeId: goodsTypeId, // 通过 query 参数传递 goodsTypeId
       },
     })
     .then((response) => {
@@ -85,6 +76,24 @@ const selectGoodsByGoodsTypeId = (goodsTypeId) => {
       console.log("Error fetching goods:", error); // 打印错误信息
     });
 };
+
+// const selectGoodsByGoodsTypeId = (goodsTypeId) => {
+//   console.log("Fetching goods for goodsTypeId:", goodsTypeId); // 打印正在查询的商品分类ID
+//   axios
+//     .get("selectGoodsByGoodsTypeId", {
+//       params: {
+//         goodsTypeId: goodsTypeId,
+//       },
+//     })
+//     .then((response) => {
+//       goodsArr.value = response.data;
+//       console.log("Fetched goods:", response.data); // 打印后端返回的商品数据
+//       console.log("goodsArr:", goodsArr.value); // 打印更新后的 goodsArr
+//     })
+//     .catch((error) => {
+//       console.log("Error fetching goods:", error); // 打印错误信息
+//     });
+// };
 //初始化
 const init = () => {
   axios

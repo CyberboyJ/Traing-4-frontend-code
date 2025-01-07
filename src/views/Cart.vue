@@ -98,87 +98,175 @@ const goodsTotalPrice = computed(() => {
   return totalPrice;
 });
 //初始化
+// 获取商品详情并合并到购物车数据中
+const fetchProductDetails = (cartItem) => {
+  return new Promise((resolve, reject) => {
+    axios
+      .get("selectGoodsById", { params: { goodsId: cartItem.goodsId } })
+      .then((response) => {
+        if (response.data && response.data.length > 0) {
+          const goods = response.data[0]; // 获取返回的商品数据
+          // 将商品的详细信息（名称、价格、图片等）合并到购物车项
+          cartItem.goodsName = goods.goodsName;
+          cartItem.goodsImg = goods.goodsImg;
+          cartItem.goodsPrice = goods.goodsPrice;
+          resolve(cartItem); // 返回已更新的 cartItem
+        } else {
+          console.error(`商品ID为${cartItem.goodsId}的商品信息未找到`);
+          reject(`商品ID为${cartItem.goodsId}的商品信息未找到`);
+        }
+      })
+      .catch((error) => {
+        console.error("获取商品详情失败：", error);
+        reject(error); // 失败时返回错误
+      });
+  });
+};
+
+// 初始化购物车
 const init = () => {
+  if (!customer || !customer.telId) {
+    console.error("未找到客户的手机号码（telId）。");
+    return;
+  }
+
+  console.log("开始加载购物车数据...");
+
   axios
-    .post("selectCartByTelId", {
-      telId: customer.telId,
-    })
+    .get(`selectCartByTelId/${customer.telId}`) // 使用路径参数
     .then((response) => {
-      cartArr.value = response.data;
+      cartArr.value = response.data; // 保存购物车数据
+      console.log("购物车数据：", cartArr.value);
+
+      // 对每个购物车商品获取详细信息
+      const productDetailsPromises = cartArr.value.map((cartItem) =>
+        fetchProductDetails(cartItem)
+      );
+
+      // 等待所有商品的详细信息都加载完成
+      Promise.all(productDetailsPromises)
+        .then(() => {
+          console.log("所有商品的详细信息已加载：", cartArr.value);
+        })
+        .catch((error) => {
+          console.error("加载商品信息时出错：", error);
+        });
     })
     .catch((error) => {
-      console.log(error);
+      console.log("获取购物车数据失败：", error);
     });
 };
+
 init();
+// 改变购物车中商品被勾选的状态
 const isSelect = (goodsId, state) => {
-  //用于检查的部分
+  // 确保 goodsId 为字符串类型
+  const goodsIdStr = String(goodsId); // 强制转换为字符串
+
   console.log("发送请求的数据:", {
     telId: customer.telId,
-    goodsId: goodsId,
+    goodsId: goodsIdStr, // 传递字符串类型的 goodsId
     state: state == 1 ? 0 : 1,
   });
+
   axios
-    .post("updateCartState", {
+    .put("updateCartState", {
       telId: customer.telId,
-      goodsId: goodsId,
+      goodsId: goodsIdStr, // 确保传递给后端的是字符串
       state: state == 1 ? 0 : 1,
     })
     .then((response) => {
-      if (response.data.affectedRows == 1) {
-        init();
+      console.log("更新商品状态响应：", response.data);
+      if (response.data) {
+        init(); // 重新加载购物车数据
       } else {
         alert("选择商品失败！");
       }
     })
     .catch((error) => {
       console.log(error);
+      alert("选择商品请求出错！");
     });
 };
 
-//修改商品数量
-const changeQuantity = (goodsId, quantity, num) => {
-  if (quantity <= 1 && num == -1) {
+// 修改商品数量
+const changeQuantity = (goodsId, currentQuantity, num) => {
+  // 如果商品数量小于等于1，且减少操作，则不进行处理
+  if (currentQuantity <= 1 && num === -1) {
     return;
   }
+
+  // 发送给后端的数量变更值（+1 或 -1）
+  const quantityChange = num; // 正常情况下直接传递 +1 或 -1
+
+  // 使用 PUT 方法传递数量变化给后端
   axios
-    .post("updateQuantityCart", {
+    .put("updateQuantityCart", {
       telId: customer.telId,
-      goodsId: goodsId,
-      quantity: num,
+      goodsId: String(goodsId), // 确保 goodsId 是字符串
+      quantity: quantityChange, // 传递数量变化值
     })
     .then((response) => {
-      if (response.data.affectedRows == 1) {
-        init();
+      console.log("获取到的商品信息~", response.data);
+
+      // 判断后端返回的是否为 true，表示操作成功
+      if (response.data === true) {
+        // 找到当前更新的商品
+        const updatedCartArr = [...cartArr.value]; // 创建购物车数据副本
+
+        // 找到需要更新数量的商品
+        const updatedItem = updatedCartArr.find(
+          (item) => item.goodsId === goodsId
+        );
+        if (updatedItem) {
+          updatedItem.quantity += quantityChange; // 更新商品数量
+        }
+
+        // 更新 cartArr
+        cartArr.value = updatedCartArr;
+
+        console.log("购物车数据已更新：", cartArr.value);
       } else {
         alert("更新数量失败！");
       }
     })
     .catch((error) => {
-      console.log(error);
+      console.log("更新数量请求出错：", error);
+      alert("更新数量请求出错！");
     });
 };
 
+// 删除指定商品
 const delGoods = (goodsId) => {
   if (!confirm("确认要删除此商品吗？")) {
     return;
   }
+
+  // 使用 DELETE 方法，传递 telId 和 goodsId
   axios
-    .post("deleteCartByTelIdByGoodsId", {
-      telId: customer.telId,
-      goodsId: goodsId,
+    .delete("deleteCartByTeIdByGoodsId", {
+      params: {
+        // 使用 params 而不是 body 传递查询参数
+        telId: customer.telId,
+        goodsId: String(goodsId), // 确保 goodsId 是字符串
+      },
     })
     .then((response) => {
-      if (response.data.affectedRows == 1) {
-        init();
+      console.log("删除商品响应：", response.data);
+
+      // 检查后端返回的 response.data 是否为 true，表示删除成功
+      if (response.data === true) {
+        init(); // 删除成功后重新加载购物车数据
       } else {
         alert("删除商品失败！");
       }
     })
     .catch((error) => {
-      console.log(error);
+      console.log("删除商品请求出错：", error);
+      alert("删除商品请求出错！");
     });
 };
+
 const toGoodsType = () => {
   router.push("/goodsType");
 };
